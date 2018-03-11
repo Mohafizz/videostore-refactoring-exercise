@@ -1,57 +1,45 @@
-const Customer = require("./customer");
-const Rental = require("./rental");
-const Movie = require("./movie");
+import Customer from "./customer";
+import Rental from "./rental";
+import { createMovie } from "./movie";
 
-function createMovie(rental, movies) {
-  return new Movie({
-    id: rental.movieID,
-    title: movies[rental.movieID].title,
-    code: movies[rental.movieID].code
+function getTotalBill(rentals) {
+  const sum = (a, b) => a + b;
+  return rentals.map(r => r.getBill()).reduce(sum, 0);
+}
+
+function incrementRenterPointsForCustomer(rentals, c) {
+  for (let r of rentals) {
+    c.incrementRentalPoints();
+    if (r.qualifiedForBonusRenterPoints()) c.incrementRentalPoints();
+  }
+}
+
+function statement(customer, movies) {
+  const c = new Customer({ name: customer.name });
+  const rentals = customer.rentals.map(rental => {
+    const movieDetails = movies[rental.movieID];
+    const movie = createMovie({
+      id: rental.movieID,
+      title: movieDetails.title,
+      code: movieDetails.code
+    });
+    return new Rental({ movie: movie, days: rental.days });
   });
-}
+  let result = `Rental Record for ${c.name}\n`;
 
-function calculateRenterPoints(rentals) {
-  let frequentRenterPoints = 0;
-  for (let rental of rentals) {
-    frequentRenterPoints++;
-    if (rental.isEligibleForBonusRenterPoint()) frequentRenterPoints++;
-  }
-  return frequentRenterPoints;
-}
-
-function getTotalCost(rentals) {
-  let totalCost = 0;
-  for (let rental of rentals) {
-    let rentalCost = rental.getCost();
-    totalCost += rentalCost;
-  }
-  return totalCost;
-}
-
-module.exports = function statement(customerRecord, movies) {
-  let customer = new Customer({ name: customerRecord.name });
-
-  let rentals = customerRecord.rentals.map(
-    rental =>
-      new Rental({
-        movie: createMovie(rental, movies),
-        days: rental.days
-      })
-  );
-
-  let result = `Rental Record for ${customer.name}\n`;
-
-  for (let rental of rentals) {
-    let rentalCost = rental.getCost();
-    //print figures for this rental
-    result += `\t${rental.movie.title}\t${rentalCost}\n`;
+  for (let r of rentals) {
+    let bill = r.getBill();
+    result += `\t${r.movie.title}\t${bill}\n`;
   }
 
   // add footer lines
-  result += `Amount owed is ${getTotalCost(rentals)}\n`;
-  result += `You earned ${calculateRenterPoints(
-    rentals
-  )} frequent renter points\n`;
+  const totalBill = getTotalBill(rentals);
+  result += `Amount owed is ${totalBill}\n`;
+
+  incrementRenterPointsForCustomer(rentals, c);
+  result += `You earned ${c.frequentRenterPoints} frequent renter points\n`;
 
   return result;
-};
+}
+
+export { statement };

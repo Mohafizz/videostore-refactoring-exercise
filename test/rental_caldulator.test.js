@@ -1,4 +1,4 @@
-const statement = require("../src/rental_calculator");
+import { statement } from "../src/rental_calculator";
 
 const regularMovie = {
   movieID: "F001",
@@ -21,7 +21,7 @@ let movies = {
   [childrenMovie.movieID]: childrenMovie.details
 };
 
-describe("Movie Rental Application", () => {
+describe("Moive Rental Application", () => {
   it("should display customer name in the rental bill", () => {
     let customer = {
       name: "martin",

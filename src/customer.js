@@ -3,10 +3,9 @@ class Customer {
     this.name = name;
     this.frequentRenterPoints = 0;
   }
-
-  addRentalPoints() {
+  incrementRentalPoints() {
     this.frequentRenterPoints++;
   }
 }
 
-module.exports = Customer;
+export default Customer;
