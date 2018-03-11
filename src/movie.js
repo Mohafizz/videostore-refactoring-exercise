@@ -5,5 +5,4 @@ class Movie {
     this.code = code;
   }
 }
-
 module.exports = Movie;
